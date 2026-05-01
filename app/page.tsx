@@ -7,53 +7,41 @@ export default function Chat() {
   const [chat, setChat] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
+  const [speaking, setSpeaking] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
-const speak = (text: string) => {
-  window.speechSynthesis.cancel();
 
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.85;
-  utterance.pitch = 1.3;
-  utterance.volume = 1;
+  const speak = (text: string) => {
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1.3;
+    utterance.volume = 1;
+    utterance.lang = "en-US";
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
 
-  const doSpeak = () => {
+    const doSpeak = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const femaleVoice =
+        voices.find(v => v.name.includes("Zira")) ||
+        voices.find(v => v.name.includes("Female")) ||
+        voices.find(v => v.name.includes("Google UK English Female")) ||
+        voices[0];
+      if (femaleVoice) utterance.voice = femaleVoice;
+      window.speechSynthesis.speak(utterance);
+    };
+
     const voices = window.speechSynthesis.getVoices();
-    console.log("Available voices:", voices.map(v => v.name));
-
-    const preferredVoice =
-      voices.find(v => v.name === "Microsoft Zira - English (United States)") ||
-      voices.find(v => v.name === "Google UK English Female") ||
-      voices.find(v => v.name.includes("Female")) ||
-      voices.find(v => v.name.includes("Zira")) ||
-      voices[0];
-
-    if (preferredVoice) {
-      utterance.voice = preferredVoice;
-      console.log("Using voice:", preferredVoice.name);
-    }
-
-    utterance.onstart = () => console.log("Speaking started");
-    utterance.onend = () => console.log("Speaking ended");
-    utterance.onerror = (e) => console.log("Speech error:", e);
-
-    window.speechSynthesis.speak(utterance);
-  };
-
-  const voices = window.speechSynthesis.getVoices();
-  if (voices.length > 0) {
-    doSpeak();
-  } else {
-    // Voices abhi load nahi huin — wait karo
-    window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.onvoiceschanged = null; // remove listener
+    if (voices.length > 0) doSpeak();
+    else window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.onvoiceschanged = null;
       doSpeak();
     };
-  }
-};
+  };
 
   const startVoice = () => {
     const SpeechRecognition =
@@ -64,13 +52,14 @@ const speak = (text: string) => {
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = "ur-PK";
+    recognition.lang = "en-US";
     recognition.interimResults = false;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
     recognition.onresult = (e: any) => {
       const text = e.results[0][0].transcript;
       setMessage(text);
+      sendMessage(text);
     };
     recognition.start();
   };
@@ -99,34 +88,80 @@ const speak = (text: string) => {
   return (
     <div style={{
       display: "flex", flexDirection: "column", height: "100vh",
-      background: "#0f0f13", color: "#e8eaf0",
-      fontFamily: "'Segoe UI', sans-serif"
+      background: "linear-gradient(160deg, #0d0015, #1a0030, #0d0015)",
+      color: "#e8eaf0", fontFamily: "'Segoe UI', sans-serif",
+      position: "relative"
     }}>
+
+      {/* Full Screen Background GIF */}
+      <img
+        src="/arik.gif"
+        alt="background"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          objectFit: "cover",
+          zIndex: 0,
+          opacity: 0.15
+        }}
+      />
+
+      {/* SARA Character */}
       <div style={{
-        padding: "16px 24px", borderBottom: "1px solid #252730",
-        background: "#161820", display: "flex", alignItems: "center", gap: 12
+        display: "flex", flexDirection: "column", alignItems: "center",
+        paddingTop: 24, paddingBottom: 8, position: "relative",
+        zIndex: 1
       }}>
         <div style={{
-          width: 40, height: 40, borderRadius: "50%",
-          background: "linear-gradient(135deg, #7c6af7, #4fd1c5)",
-          display: "flex", alignItems: "center",
-          justifyContent: "center", fontSize: 18
-        }}>🤖</div>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 18 }}>Your ARIK</div>
-          <div style={{ fontSize: 12, color: "#4fd1c5" }}>● Online</div>
+          position: "absolute", width: 240, height: 240, borderRadius: "50%", top: 10,
+          background: speaking
+            ? "radial-gradient(circle, rgba(255,100,200,0.35), transparent 70%)"
+            : "radial-gradient(circle, rgba(150,80,255,0.15), transparent 70%)",
+          transition: "all 0.4s ease"
+        }} />
+
+        <div style={{
+          width: 180, height: 180, borderRadius: "50%", overflow: "hidden",
+          border: speaking ? "3px solid #ff64c8" : "3px solid #7c3aed",
+          boxShadow: speaking
+            ? "0 0 35px rgba(255,100,200,0.7), 0 0 60px rgba(255,100,200,0.3)"
+            : "0 0 20px rgba(124,58,237,0.4)",
+          transition: "all 0.4s ease", position: "relative", zIndex: 1
+        }}>
+          <img
+            src="/sara.gif"
+            alt="SARA"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+          />
+        </div>
+
+        <div style={{ marginTop: 12, textAlign: "center", zIndex: 1 }}>
+          <div style={{
+            fontWeight: 800, fontSize: 26, letterSpacing: 2,
+            background: "linear-gradient(90deg, #ff64c8, #a855f7, #4fd1c5)",
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
+          }}>✨ SARA ✨</div>
+          <div style={{
+            fontSize: 12, marginTop: 4,
+            color: speaking ? "#ff64c8" : listening ? "#ef4444" : "#4fd1c5"
+          }}>
+            {speaking ? "● Bol rahi hoon..." : listening ? "● Sun rahi hoon..." : "● Online"}
+          </div>
         </div>
       </div>
 
+      {/* Chat */}
       <div style={{
-        flex: 1, overflowY: "auto", padding: "20px 24px",
-        display: "flex", flexDirection: "column", gap: 12
+        flex: 1, overflowY: "auto", padding: "10px 20px",
+        display: "flex", flexDirection: "column", gap: 10,
+        zIndex: 1, position: "relative"
       }}>
         {chat.length === 0 && (
           <div style={{ textAlign: "center", margin: "auto", color: "#6b7080" }}>
-            <div style={{ fontSize: 48 }}>✨</div>
-            <div style={{ fontSize: 20, fontWeight: 700, color: "#e8eaf0" }}>Your ARIK</div>
-            <div style={{ fontSize: 14, marginTop: 8 }}>Type karo ya 🎤 dabao!</div>
+            <div style={{ fontSize: 14 }}>Kuch bhi pucho — main yahan hoon! 💜</div>
           </div>
         )}
         {chat.map((c, i) => (
@@ -135,12 +170,14 @@ const speak = (text: string) => {
             justifyContent: c.role === "user" ? "flex-end" : "flex-start"
           }}>
             <div style={{
-              maxWidth: "70%", padding: "10px 14px", borderRadius: 14,
-              background: c.role === "user" ? "#3c3489" : "#1e2035",
-              border: c.role === "user" ? "none" : "1px solid #252730",
-              fontSize: 14, lineHeight: 1.7,
-              borderTopRightRadius: c.role === "user" ? 4 : 14,
-              borderTopLeftRadius: c.role === "user" ? 14 : 4,
+              maxWidth: "75%", padding: "10px 16px", borderRadius: 18,
+              background: c.role === "user"
+                ? "linear-gradient(135deg, #7c3aed, #a855f7)"
+                : "rgba(255,255,255,0.06)",
+              border: c.role === "user" ? "none" : "1px solid rgba(255,100,200,0.25)",
+              fontSize: 14, lineHeight: 1.8,
+              borderTopRightRadius: c.role === "user" ? 4 : 18,
+              borderTopLeftRadius: c.role === "user" ? 18 : 4,
             }}>
               {c.text}
             </div>
@@ -149,42 +186,53 @@ const speak = (text: string) => {
         {loading && (
           <div style={{ display: "flex" }}>
             <div style={{
-              background: "#1e2035", border: "1px solid #252730",
-              padding: "10px 16px", borderRadius: 14, borderTopLeftRadius: 4,
-              color: "#6b7080", fontSize: 14
-            }}>ARIK soch raha hai... ⏳</div>
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,100,200,0.25)",
+              padding: "10px 16px", borderRadius: 18, borderTopLeftRadius: 4,
+              color: "#ff64c8", fontSize: 14
+            }}>SARA soch rahi hai... 💭</div>
           </div>
         )}
         <div ref={bottomRef} />
       </div>
 
+      {/* Input */}
       <div style={{
-        padding: "14px 24px", borderTop: "1px solid #252730",
-        background: "#161820", display: "flex", gap: 10, alignItems: "center"
+        padding: "14px 20px",
+        borderTop: "1px solid rgba(255,100,200,0.15)",
+        background: "rgba(0,0,0,0.4)",
+        display: "flex", gap: 10, alignItems: "center",
+        zIndex: 1, position: "relative"
       }}>
         <button onClick={startVoice} style={{
-          width: 44, height: 44, borderRadius: 10, border: "none",
-          background: listening ? "#ef4444" : "#252730",
-          fontSize: 20, cursor: "pointer", flexShrink: 0
+          width: 46, height: 46, borderRadius: "50%", border: "none",
+          background: listening
+            ? "linear-gradient(135deg, #ef4444, #b91c1c)"
+            : "linear-gradient(135deg, #7c3aed, #a855f7)",
+          fontSize: 20, cursor: "pointer", flexShrink: 0,
+          boxShadow: listening ? "0 0 20px rgba(239,68,68,0.6)" : "0 0 10px rgba(124,58,237,0.4)"
         }}>🎤</button>
 
         <input
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder={listening ? "Sun raha hoon..." : "Kuch bhi pucho..."}
+          placeholder={listening ? "Sun rahi hoon..." : "Kuch bhi pucho..."}
           style={{
-            flex: 1, background: "#0f0f13", border: "1px solid #252730",
-            borderRadius: 10, padding: "10px 14px", color: "#e8eaf0",
+            flex: 1, background: "rgba(255,255,255,0.05)",
+            border: "1px solid rgba(255,100,200,0.25)",
+            borderRadius: 25, padding: "11px 18px", color: "#e8eaf0",
             fontSize: 14, outline: "none"
           }}
         />
 
         <button onClick={() => sendMessage()} disabled={loading} style={{
-          background: "#7c6af7", border: "none", borderRadius: 10,
-          padding: "10px 20px", color: "#fff", fontWeight: 600,
+          background: "linear-gradient(135deg, #ff64c8, #a855f7)",
+          border: "none", borderRadius: 25,
+          padding: "11px 22px", color: "#fff", fontWeight: 700,
           cursor: loading ? "not-allowed" : "pointer", fontSize: 14,
-          opacity: loading ? 0.6 : 1
+          opacity: loading ? 0.6 : 1,
+          boxShadow: "0 0 15px rgba(255,100,200,0.4)"
         }}>Send ➤</button>
       </div>
     </div>
