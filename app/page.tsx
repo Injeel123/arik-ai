@@ -15,34 +15,6 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
 
-  const speak = (text: string) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.2;
-    utterance.pitch = 1.0;
-    utterance.volume = 1;
-    utterance.lang = "en-GB";
-    utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => setSpeaking(false);
-
-    const doSpeak = () => {
-      const voices = window.speechSynthesis.getVoices();
-      const voice =
-        voices.find(v => v.name === "Google UK English Female") ||
-        voices.find(v => v.name === "Microsoft Zira - English (United States)") ||
-        voices[0];
-      if (voice) utterance.voice = voice;
-      window.speechSynthesis.speak(utterance);
-    };
-
-    const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) doSpeak();
-    else window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.onvoiceschanged = null;
-      doSpeak();
-    };
-  };
-
   const startVoice = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -81,7 +53,14 @@ export default function Chat() {
     const data = await res.json();
     const reply = data.reply || "Koi jawab nahi mila";
     setChat([...newChat, { role: "assistant", text: reply }]);
-    speak(reply);
+
+    if (data.audio) {
+      setSpeaking(true);
+      const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
+      audio.onended = () => setSpeaking(false);
+      audio.play();
+    }
+
     setLoading(false);
   };
 
@@ -106,10 +85,7 @@ export default function Chat() {
             background: "linear-gradient(90deg, #ff64c8, #a855f7, #4fd1c5)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
           }}>✨ SARA ✨</div>
-          <button onClick={() => {
-            setStarted(true);
-            speak("Ji Sir! Aap aa gaye, main wait kar rahi thi!");
-          }} style={{
+          <button onClick={() => setStarted(true)} style={{
             background: "linear-gradient(135deg, #ff64c8, #a855f7)",
             border: "none", borderRadius: 25, padding: "16px 40px",
             color: "#fff", fontWeight: 700, fontSize: 20, cursor: "pointer",
