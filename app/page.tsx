@@ -15,38 +15,30 @@ export default function Chat() {
   }, [chat]);
 
   const speak = (text: string) => {
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.82;
-  utterance.pitch = 1.5;
-  utterance.volume = 1;
- utterance.lang = "hi-IN"; // Urdu Pakistani
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.00;
+    utterance.pitch = 1.6;
+    utterance.volume = 1;
+    utterance.lang = "en-GB";
+    utterance.onstart = () => setSpeaking(true);
+    utterance.onend = () => setSpeaking(false);
 
-  const doSpeak = () => {
+    const doSpeak = () => {
+      const voices = window.speechSynthesis.getVoices();
+   const voice =
+  voices.find(v => v.name === "Google UK English Female") ||
+  voices.find(v => v.name === "Microsoft Zira - English (United States)") ||
+  voices[0];
+    };
+
     const voices = window.speechSynthesis.getVoices();
-    
-    // Urdu voice dhundo
-    const urduVoice = 
-      voices.find(v => v.lang === "ur-PK") ||
-      voices.find(v => v.lang === "ur") ||
-      voices.find(v => v.name.includes("Urdu")) ||
-      voices.find(v => v.lang === "hi-IN") || // Hindi fallback
-      voices[0];
-    
-    if (urduVoice) utterance.voice = urduVoice;
-    window.speechSynthesis.speak(utterance);
+    if (voices.length > 0) doSpeak();
+    else window.speechSynthesis.onvoiceschanged = () => {
+      window.speechSynthesis.onvoiceschanged = null;
+      doSpeak();
+    };
   };
-
-  utterance.onstart = () => setSpeaking(true);
-  utterance.onend = () => setSpeaking(false);
-
-  const voices = window.speechSynthesis.getVoices();
-  if (voices.length > 0) doSpeak();
-  else window.speechSynthesis.onvoiceschanged = () => {
-    window.speechSynthesis.onvoiceschanged = null;
-    doSpeak();
-  };
-};
 
   const startVoice = () => {
     const SpeechRecognition =
@@ -98,30 +90,25 @@ export default function Chat() {
       position: "relative"
     }}>
 
-      {/* Full Screen Background GIF */}
+      {/* Background GIF */}
       <img
-        src="/arik.gif"
+        src="/sara.gif"
         alt="background"
         style={{
-          position: "fixed",
-          top: 0,
-          left: 0,
-          width: "100vw",
-          height: "100vh",
-          objectFit: "cover",
-          zIndex: 0,
-          opacity: 0.15
+          position: "fixed", top: 0, left: 0,
+          width: "100vw", height: "100vh",
+          objectFit: "cover", zIndex: 0, opacity: 0.15
         }}
       />
 
       {/* SARA Character */}
       <div style={{
         display: "flex", flexDirection: "column", alignItems: "center",
-        paddingTop: 24, paddingBottom: 8, position: "relative",
-        zIndex: 1
+        paddingTop: 24, paddingBottom: 8, position: "relative", zIndex: 1
       }}>
         <div style={{
-          position: "absolute", width: 240, height: 240, borderRadius: "50%", top: 10,
+          position: "absolute", width: 240, height: 240,
+          borderRadius: "50%", top: 10,
           background: speaking
             ? "radial-gradient(circle, rgba(255,100,200,0.35), transparent 70%)"
             : "radial-gradient(circle, rgba(150,80,255,0.15), transparent 70%)",
