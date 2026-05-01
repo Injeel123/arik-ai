@@ -17,10 +17,10 @@ export default function Chat() {
   const speak = (text: string) => {
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(text);
-  utterance.rate = 0.8;
-  utterance.pitch = 1.0;
+  utterance.rate = 0.82;
+  utterance.pitch = 1.5;
   utterance.volume = 1;
-  utterance.lang "hi-IN"; // Urdu Pakistani
+ utterance.lang = "hi-IN"; // Urdu Pakistani
 
   const doSpeak = () => {
     const voices = window.speechSynthesis.getVoices();
