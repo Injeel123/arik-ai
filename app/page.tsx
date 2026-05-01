@@ -57,7 +57,7 @@ export default function Chat() {
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = "ur-PK";
+    recognition.lang = "hi-IN";
     recognition.interimResults = false;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
