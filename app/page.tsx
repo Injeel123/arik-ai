@@ -30,7 +30,7 @@ export default function Chat() {
       voices.find(v => v.lang === "ur-PK") ||
       voices.find(v => v.lang === "ur") ||
       voices.find(v => v.name.includes("Urdu")) ||
-      voices.find(v => v.lang === "hi-IN") || // Hindi fallback
+      voices.find(v => v.lang"ur-PK";) || // Hindi fallback
       voices[0];
     
     if (urduVoice) utterance.voice = urduVoice;
@@ -57,7 +57,7 @@ export default function Chat() {
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = "en-US";
+    recognition.lang = "ur-PK";
     recognition.interimResults = false;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
