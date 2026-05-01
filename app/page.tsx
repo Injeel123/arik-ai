@@ -15,33 +15,38 @@ export default function Chat() {
   }, [chat]);
 
   const speak = (text: string) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1.3;
-    utterance.volume = 1;
-    utterance.lang = "en-US";
-    utterance.onstart = () => setSpeaking(true);
-    utterance.onend = () => setSpeaking(false);
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.rate = 0.8;
+  utterance.pitch = 1.0;
+  utterance.volume = 1;
+  utterance.lang = "ur-PK";  // Urdu Pakistani
 
-    const doSpeak = () => {
-      const voices = window.speechSynthesis.getVoices();
-      const femaleVoice =
-        voices.find(v => v.name.includes("Zira")) ||
-        voices.find(v => v.name.includes("Female")) ||
-        voices.find(v => v.name.includes("Google UK English Female")) ||
-        voices[0];
-      if (femaleVoice) utterance.voice = femaleVoice;
-      window.speechSynthesis.speak(utterance);
-    };
-
+  const doSpeak = () => {
     const voices = window.speechSynthesis.getVoices();
-    if (voices.length > 0) doSpeak();
-    else window.speechSynthesis.onvoiceschanged = () => {
-      window.speechSynthesis.onvoiceschanged = null;
-      doSpeak();
-    };
+    
+    // Urdu voice dhundo
+    const urduVoice = 
+      voices.find(v => v.lang === "ur-PK") ||
+      voices.find(v => v.lang === "ur") ||
+      voices.find(v => v.name.includes("Urdu")) ||
+      voices.find(v => v.lang === "hi-IN") || // Hindi fallback
+      voices[0];
+    
+    if (urduVoice) utterance.voice = urduVoice;
+    window.speechSynthesis.speak(utterance);
   };
+
+  utterance.onstart = () => setSpeaking(true);
+  utterance.onend = () => setSpeaking(false);
+
+  const voices = window.speechSynthesis.getVoices();
+  if (voices.length > 0) doSpeak();
+  else window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.onvoiceschanged = null;
+    doSpeak();
+  };
+};
 
   const startVoice = () => {
     const SpeechRecognition =
