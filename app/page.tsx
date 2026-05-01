@@ -20,7 +20,7 @@ export default function Chat() {
   utterance.rate = 0.8;
   utterance.pitch = 1.0;
   utterance.volume = 1;
-  utterance.lang = "ur-PK";  // Urdu Pakistani
+  utterance.lang "hi-IN"; // Urdu Pakistani
 
   const doSpeak = () => {
     const voices = window.speechSynthesis.getVoices();
