@@ -8,6 +8,7 @@ export default function Chat() {
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const [started, setStarted] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -17,8 +18,8 @@ export default function Chat() {
   const speak = (text: string) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.00;
-    utterance.pitch = 1.6;
+    utterance.rate = 1.2;
+    utterance.pitch = 1.0;
     utterance.volume = 1;
     utterance.lang = "en-GB";
     utterance.onstart = () => setSpeaking(true);
@@ -26,10 +27,12 @@ export default function Chat() {
 
     const doSpeak = () => {
       const voices = window.speechSynthesis.getVoices();
-   const voice =
-  voices.find(v => v.name === "Google UK English Female") ||
-  voices.find(v => v.name === "Microsoft Zira - English (United States)") ||
-  voices[0];
+      const voice =
+        voices.find(v => v.name === "Google UK English Female") ||
+        voices.find(v => v.name === "Microsoft Zira - English (United States)") ||
+        voices[0];
+      if (voice) utterance.voice = voice;
+      window.speechSynthesis.speak(utterance);
     };
 
     const voices = window.speechSynthesis.getVoices();
@@ -89,6 +92,31 @@ export default function Chat() {
       color: "#e8eaf0", fontFamily: "'Segoe UI', sans-serif",
       position: "relative"
     }}>
+
+      {/* Welcome Screen */}
+      {!started && (
+        <div style={{
+          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
+          background: "rgba(0,0,0,0.85)", zIndex: 999,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          flexDirection: "column", gap: 20
+        }}>
+          <div style={{
+            fontSize: 32, fontWeight: 800,
+            background: "linear-gradient(90deg, #ff64c8, #a855f7, #4fd1c5)",
+            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
+          }}>✨ SARA ✨</div>
+          <button onClick={() => {
+            setStarted(true);
+            speak("Ji Sir! Aap aa gaye, main wait kar rahi thi!");
+          }} style={{
+            background: "linear-gradient(135deg, #ff64c8, #a855f7)",
+            border: "none", borderRadius: 25, padding: "16px 40px",
+            color: "#fff", fontWeight: 700, fontSize: 20, cursor: "pointer",
+            boxShadow: "0 0 30px rgba(255,100,200,0.5)"
+          }}>✨ SARA se Milein ✨</button>
+        </div>
+      )}
 
       {/* Background GIF */}
       <img
