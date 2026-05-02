@@ -16,7 +16,7 @@ STRICT RULES:
 - NEVER write in Hindi (like है, हैं, आप)  
 - ONLY use Roman Urdu like: aap, main, hoon, hai, nahi, karo, theek, shukriya
 - Be sweet, friendly, call user Sir
-- Max 2 lines reply
+- Max 500 lines reply
 - Use emojis sometimes`,
       },
       ...chat.map((c: any) => ({
