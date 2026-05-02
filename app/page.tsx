@@ -90,7 +90,7 @@ export default function Chat() {
   return (
     <div style={{
       width: "100vw", height: "100vh", overflow: "hidden",
-      background: "linear-gradient(180deg, #0a0015 0%, #1a0030 50%, #0a0010 100%)",
+      background: "#000",
       display: "flex", flexDirection: "column",
       fontFamily: "'Segoe UI', sans-serif", position: "relative"
     }}>
@@ -124,98 +124,99 @@ export default function Chat() {
         </div>
       )}
 
-      {/* Stars background */}
+      {/* Sara Full Screen */}
       <div style={{
-        position: "fixed", inset: 0, zIndex: 0,
-        background: "radial-gradient(ellipse at 20% 50%, rgba(120,40,200,0.15), transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(255,100,200,0.1), transparent 50%)"
-      }} />
-
-      {/* SARA - Full Face to Face */}
-      <div style={{
-        flex: 1, display: "flex", flexDirection: "column",
-        alignItems: "center", justifyContent: "center",
-        position: "relative", zIndex: 1
+        flex: 1, position: "relative", zIndex: 1, overflow: "hidden"
       }}>
 
-        {/* Glow behind sara */}
-        <div style={{
-          position: "absolute",
-          width: 350, height: 350,
-          borderRadius: "50%",
-          background: speaking
-            ? "radial-gradient(circle, rgba(255,100,200,0.4), transparent 70%)"
-            : "radial-gradient(circle, rgba(120,60,255,0.2), transparent 70%)",
+        {/* Sara GIF - Full Screen */}
+        <img src="/sara.gif" style={{
+          position: "absolute", inset: 0,
+          width: "100%", height: "100%",
+          objectFit: "cover",
+          filter: speaking
+            ? "drop-shadow(0 0 40px #ff64c8) brightness(1.1)"
+            : "brightness(0.9)",
           transition: "all 0.5s ease",
-          animation: speaking ? "pulse 1s infinite" : "none"
+          transform: speaking ? "scale(1.03)" : "scale(1)"
         }} />
 
-        {/* Sara image - big face to face */}
+        {/* Gradient overlay bottom */}
         <div style={{
-          width: 280, height: 280, borderRadius: "50%",
-          overflow: "hidden", position: "relative", zIndex: 2,
-          border: speaking ? "4px solid #ff64c8" : "4px solid #7c3aed",
-          boxShadow: speaking
-            ? "0 0 50px rgba(255,100,200,0.8), 0 0 100px rgba(255,100,200,0.4)"
-            : "0 0 30px rgba(124,58,237,0.5)",
-          transition: "all 0.4s ease",
-          transform: speaking ? "scale(1.05)" : "scale(1)"
-        }}>
-          <img src="/sara.gif" style={{
-            width: "100%", height: "100%", objectFit: "cover"
-          }} />
-        </div>
+          position: "absolute", bottom: 0, left: 0, right: 0,
+          height: "45%",
+          background: "linear-gradient(transparent, rgba(5,0,15,0.95))",
+          zIndex: 2
+        }} />
 
-        {/* Name + Status */}
-        <div style={{ textAlign: "center", marginTop: 16, zIndex: 2 }}>
+        {/* Gradient overlay top */}
+        <div style={{
+          position: "absolute", top: 0, left: 0, right: 0,
+          height: "20%",
+          background: "linear-gradient(rgba(5,0,15,0.7), transparent)",
+          zIndex: 2
+        }} />
+
+        {/* Speaking pulse ring */}
+        {speaking && (
+          <div style={{
+            position: "absolute", inset: 0, zIndex: 2,
+            border: "3px solid rgba(255,100,200,0.4)",
+            animation: "ringPulse 1.5s infinite",
+            pointerEvents: "none"
+          }} />
+        )}
+
+        {/* Message bubble - top */}
+        {(chat.length > 0 || loading) && (
+          <div style={{
+            position: "absolute", top: 20, left: 16, right: 16,
+            zIndex: 3,
+            background: "rgba(0,0,0,0.65)",
+            backdropFilter: "blur(12px)",
+            border: "1px solid rgba(255,100,200,0.35)",
+            borderRadius: 20, padding: "14px 20px",
+            fontSize: 15, color: "#f0e8ff", lineHeight: 1.8,
+            textAlign: "center",
+            boxShadow: "0 4px 30px rgba(168,85,247,0.3)"
+          }}>
+            {loading ? (
+              <span style={{ color: "#ff64c8" }}>💭 Soch rahi hoon...</span>
+            ) : (
+              chat[chat.length - 1].role === "assistant"
+                ? chat[chat.length - 1].text
+                : chat.length >= 2 ? chat[chat.length - 2].text : ""
+            )}
+          </div>
+        )}
+
+        {/* Name + Status - bottom */}
+        <div style={{
+          position: "absolute", bottom: 20, left: 0, right: 0,
+          textAlign: "center", zIndex: 3
+        }}>
           <div style={{
             fontSize: 28, fontWeight: 900, letterSpacing: 3,
             background: "linear-gradient(90deg, #ff64c8, #a855f7, #4fd1c5)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
           }}>✨ SARA ✨</div>
           <div style={{
-            fontSize: 13, marginTop: 6, fontWeight: 600,
-            color: speaking ? "#ff64c8" : listening ? "#ef4444" : "#4fd1c5",
-            letterSpacing: 1
+            fontSize: 13, marginTop: 6, fontWeight: 600, letterSpacing: 1,
+            color: speaking ? "#ff64c8" : listening ? "#ef4444" : "#4fd1c5"
           }}>
             {speaking ? "🔊 Bol rahi hoon..." : listening ? "🎤 Sun rahi hoon..." : "💚 Online"}
           </div>
         </div>
-
-        {/* Last message bubble */}
-        {chat.length > 0 && (
-          <div style={{
-            marginTop: 16, maxWidth: "80%", zIndex: 2,
-            background: "rgba(255,255,255,0.06)",
-            border: "1px solid rgba(255,100,200,0.3)",
-            borderRadius: 20, padding: "12px 20px",
-            fontSize: 14, color: "#e8eaf0", lineHeight: 1.7,
-            textAlign: "center",
-            boxShadow: "0 4px 20px rgba(168,85,247,0.2)"
-          }}>
-            {chat[chat.length - 1].role === "assistant"
-              ? chat[chat.length - 1].text
-              : chat.length >= 2
-                ? chat[chat.length - 2].text
-                : ""}
-          </div>
-        )}
-
-        {loading && (
-          <div style={{
-            marginTop: 16, zIndex: 2,
-            color: "#ff64c8", fontSize: 14, letterSpacing: 1
-          }}>💭 Soch rahi hoon...</div>
-        )}
       </div>
 
       {/* Input Bar */}
       <div style={{
-        padding: "16px 20px 24px",
-        background: "rgba(0,0,0,0.5)",
+        padding: "14px 16px 20px",
+        background: "rgba(5,0,15,0.95)",
         backdropFilter: "blur(20px)",
-        borderTop: "1px solid rgba(255,100,200,0.15)",
+        borderTop: "1px solid rgba(255,100,200,0.2)",
         display: "flex", gap: 10, alignItems: "center",
-        zIndex: 2, position: "relative"
+        zIndex: 10, position: "relative"
       }}>
         <button onClick={startVoice} style={{
           width: 50, height: 50, borderRadius: "50%", border: "none",
@@ -253,9 +254,9 @@ export default function Chat() {
       </div>
 
       <style>{`
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 0.8; }
-          50% { transform: scale(1.1); opacity: 1; }
+        @keyframes ringPulse {
+          0%, 100% { opacity: 0.4; }
+          50% { opacity: 1; }
         }
       `}</style>
     </div>
