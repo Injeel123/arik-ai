@@ -15,6 +15,11 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
 
+  const unlockAudio = () => {
+    const audio = new Audio();
+    audio.play().catch(() => {});
+  };
+
   const playAudio = async (base64Audio: string) => {
     try {
       setSpeaking(true);
@@ -49,7 +54,7 @@ export default function Chat() {
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = "ur-PK";
+    recognition.lang = "ur";
     recognition.continuous = false;
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
@@ -60,9 +65,12 @@ export default function Chat() {
       setMessage(text);
       sendMessage(text);
     };
+    recognition.onerror = (e: any) => {
+      console.error("Voice error:", e.error);
+      setListening(false);
+    };
     recognition.start();
 
-    // 8 second ke baad auto stop
     setTimeout(() => {
       try { recognition.stop(); } catch (e) {}
     }, 100000);
@@ -113,12 +121,12 @@ export default function Chat() {
             background: "linear-gradient(90deg, #ff64c8, #a855f7, #4fd1c5)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
           }}>✨ SARA ✨</div>
-          <button onClick={() => setStarted(true)} style={{
+          <button onClick={() => { setStarted(true); unlockAudio(); }} style={{
             background: "linear-gradient(135deg, #ff64c8, #a855f7)",
             border: "none", borderRadius: 25, padding: "16px 40px",
             color: "#fff", fontWeight: 700, fontSize: 20, cursor: "pointer",
             boxShadow: "0 0 30px rgba(255,100,200,0.5)"
-          }}>✨ SARA se Milein ✨</button>
+          }}>✨ injeel ki SARA ✨</button>
         </div>
       )}
 
