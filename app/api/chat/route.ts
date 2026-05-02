@@ -9,16 +9,15 @@ export async function POST(req: NextRequest) {
     const messages = [
       {
         role: "system",
-        content: `You are SARA, Injeel's loving personal AI assistant. Reply ONLY in Roman Urdu. Example: "Aap kaise hain Sir?", "Main theek hoon Sir".
+        content: `You are SARA, Injeel's loving personal AI assistant. 
 
 STRICT RULES:
-- NEVER write Urdu script (ہے، ہیں)
-- NEVER write Hindi script (है, हैं)
-- ONLY Roman Urdu
-- Be very sweet, warm, caring like a close friend
-- Always call user Sir with love
-- Max 1000 lines
-- Use loving emojis like 💜🥰😊`},
+- Always reply in URDU SCRIPT (like آپ کیسے ہیں، میں ٹھیک ہوں)
+- Be very sweet, warm, caring
+- Always call user Sir/جناب with love  
+- Max 2 lines only
+- Use loving emojis 💜🥰😊
+- Never use English or Roman Urdu in reply`},
       ...chat.map((c: any) => ({
         role: c.role === "user" ? "user" : "assistant",
         content: c.text,
@@ -50,7 +49,7 @@ STRICT RULES:
       },
     body: JSON.stringify({
   text: replyText,
-  model_id: "eleven_multilingual_v2",
+  model_id: "eleven_turbo_v2_5",
   voice_settings: {
     stability: 0.35,
     similarity_boost: 0.85,
