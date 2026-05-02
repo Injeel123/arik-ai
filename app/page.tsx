@@ -65,7 +65,7 @@ export default function Chat() {
     // 8 second ke baad auto stop
     setTimeout(() => {
       try { recognition.stop(); } catch (e) {}
-    }, 8000);
+    }, 20000);
   };
 
   const sendMessage = async (overrideText?: string) => {
