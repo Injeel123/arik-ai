@@ -31,7 +31,6 @@ export default function Chat() {
         v.name.includes("Female") ||
         v.name.includes("Samantha") ||
         v.name.includes("Google") ||
-        v.gender === "female"
       );
       if (urduVoice) utterance.voice = urduVoice;
       else if (femaleVoice) utterance.voice = femaleVoice;
