@@ -15,6 +15,31 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
 
+  const playAudio = async (base64Audio: string) => {
+    try {
+      setSpeaking(true);
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0))],
+        { type: "audio/mpeg" }
+      );
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.volume = 1.0;
+      audio.onended = () => {
+        setSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      audio.onerror = (e) => {
+        console.error("Audio error:", e);
+        setSpeaking(false);
+      };
+      await audio.play();
+    } catch (e) {
+      console.error("Play error:", e);
+      setSpeaking(false);
+    }
+  };
+
   const startVoice = () => {
     const SpeechRecognition =
       (window as any).SpeechRecognition ||
@@ -55,10 +80,7 @@ export default function Chat() {
     setChat([...newChat, { role: "assistant", text: reply }]);
 
     if (data.audio) {
-      setSpeaking(true);
-      const audio = new Audio(`data:audio/mpeg;base64,${data.audio}`);
-      audio.onended = () => setSpeaking(false);
-      audio.play();
+      await playAudio(data.audio);
     }
 
     setLoading(false);
@@ -72,7 +94,6 @@ export default function Chat() {
       position: "relative"
     }}>
 
-      {/* Welcome Screen */}
       {!started && (
         <div style={{
           position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
@@ -94,18 +115,12 @@ export default function Chat() {
         </div>
       )}
 
-      {/* Background GIF */}
-      <img
-        src="/sara.gif"
-        alt="background"
-        style={{
-          position: "fixed", top: 0, left: 0,
-          width: "100vw", height: "100vh",
-          objectFit: "cover", zIndex: 0, opacity: 0.15
-        }}
-      />
+      <img src="/sara.gif" alt="background" style={{
+        position: "fixed", top: 0, left: 0,
+        width: "100vw", height: "100vh",
+        objectFit: "cover", zIndex: 0, opacity: 0.15
+      }} />
 
-      {/* SARA Character */}
       <div style={{
         display: "flex", flexDirection: "column", alignItems: "center",
         paddingTop: 24, paddingBottom: 8, position: "relative", zIndex: 1
@@ -127,11 +142,8 @@ export default function Chat() {
             : "0 0 20px rgba(124,58,237,0.4)",
           transition: "all 0.4s ease", position: "relative", zIndex: 1
         }}>
-          <img
-            src="/sara.gif"
-            alt="SARA"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          <img src="/sara.gif" alt="SARA"
+            style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
 
         <div style={{ marginTop: 12, textAlign: "center", zIndex: 1 }}>
@@ -149,7 +161,6 @@ export default function Chat() {
         </div>
       </div>
 
-      {/* Chat */}
       <div style={{
         flex: 1, overflowY: "auto", padding: "10px 20px",
         display: "flex", flexDirection: "column", gap: 10,
@@ -192,7 +203,6 @@ export default function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <div style={{
         padding: "14px 20px",
         borderTop: "1px solid rgba(255,100,200,0.15)",

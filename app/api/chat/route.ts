@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
 
     const groqData = await groqResponse.json();
     if (!groqResponse.ok) {
+      console.error("Groq Error:", groqData.error?.message);
       return NextResponse.json({ error: groqData.error?.message }, { status: 500 });
     }
 
@@ -50,6 +51,8 @@ export async function POST(req: NextRequest) {
     });
 
     if (!voiceResponse.ok) {
+      const errText = await voiceResponse.text();
+      console.error("ElevenLabs Error:", voiceResponse.status, errText);
       // Audio nahi mila toh sirf text return karo
       return NextResponse.json({ reply: replyText });
     }
@@ -60,6 +63,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ reply: replyText, audio: audioBase64 });
 
   } catch (error: any) {
+    console.error("Server Error:", error.message);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
