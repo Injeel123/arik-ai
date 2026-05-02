@@ -50,7 +50,9 @@ export default function Chat() {
     }
     const recognition = new SpeechRecognition();
     recognition.lang = "ur-PK";
+    recognition.continuous = false;
     recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
     recognition.onresult = (e: any) => {
@@ -59,6 +61,11 @@ export default function Chat() {
       sendMessage(text);
     };
     recognition.start();
+
+    // 8 second ke baad auto stop
+    setTimeout(() => {
+      try { recognition.stop(); } catch (e) {}
+    }, 8000);
   };
 
   const sendMessage = async (overrideText?: string) => {
