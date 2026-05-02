@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -15,7 +17,6 @@ export async function POST(req: NextRequest) {
       })),
     ];
 
-    // Groq se reply lo
     const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -33,7 +34,6 @@ export async function POST(req: NextRequest) {
 
     const replyText = groqData.choices[0].message.content;
 
-    // ElevenLabs se audio lo
     const voiceResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/nf4MCGNSdM0hxM95ZBQR`, {
       method: "POST",
       headers: {
@@ -53,7 +53,6 @@ export async function POST(req: NextRequest) {
     if (!voiceResponse.ok) {
       const errText = await voiceResponse.text();
       console.error("ElevenLabs Error:", voiceResponse.status, errText);
-      // Audio nahi mila toh sirf text return karo
       return NextResponse.json({ reply: replyText });
     }
 
