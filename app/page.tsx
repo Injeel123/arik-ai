@@ -34,13 +34,9 @@ export default function Chat() {
         setSpeaking(false);
         URL.revokeObjectURL(audioUrl);
       };
-      audio.onerror = (e) => {
-        console.error("Audio error:", e);
-        setSpeaking(false);
-      };
+      audio.onerror = () => setSpeaking(false);
       await audio.play();
     } catch (e) {
-      console.error("Play error:", e);
       setSpeaking(false);
     }
   };
@@ -65,12 +61,8 @@ export default function Chat() {
       setMessage(text);
       sendMessage(text);
     };
-    recognition.onerror = (e: any) => {
-      console.error("Voice error:", e.error);
-      setListening(false);
-    };
+    recognition.onerror = () => setListening(false);
     recognition.start();
-
     setTimeout(() => {
       try { recognition.stop(); } catch (e) {}
     }, 100000);
@@ -83,155 +75,158 @@ export default function Chat() {
     setChat(newChat);
     setMessage("");
     setLoading(true);
-
     const res = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chat: newChat }),
     });
-
     const data = await res.json();
     const reply = data.reply || "Koi jawab nahi mila";
     setChat([...newChat, { role: "assistant", text: reply }]);
-
-    if (data.audio) {
-      await playAudio(data.audio);
-    }
-
+    if (data.audio) await playAudio(data.audio);
     setLoading(false);
   };
 
   return (
     <div style={{
-      display: "flex", flexDirection: "column", height: "100vh",
-      background: "linear-gradient(160deg, #0d0015, #1a0030, #0d0015)",
-      color: "#e8eaf0", fontFamily: "'Segoe UI', sans-serif",
-      position: "relative"
+      width: "100vw", height: "100vh", overflow: "hidden",
+      background: "linear-gradient(180deg, #0a0015 0%, #1a0030 50%, #0a0010 100%)",
+      display: "flex", flexDirection: "column",
+      fontFamily: "'Segoe UI', sans-serif", position: "relative"
     }}>
 
+      {/* Welcome Screen */}
       {!started && (
         <div style={{
-          position: "fixed", top: 0, left: 0, width: "100vw", height: "100vh",
-          background: "rgba(0,0,0,0.85)", zIndex: 999,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexDirection: "column", gap: 20
+          position: "fixed", inset: 0, zIndex: 999,
+          background: "radial-gradient(ellipse at center, #1a0030, #000)",
+          display: "flex", flexDirection: "column",
+          alignItems: "center", justifyContent: "center", gap: 24
         }}>
+          <img src="/sara.gif" style={{
+            width: 200, height: 200, borderRadius: "50%",
+            border: "3px solid #ff64c8",
+            boxShadow: "0 0 60px rgba(255,100,200,0.6)"
+          }} />
           <div style={{
-            fontSize: 32, fontWeight: 800,
+            fontSize: 36, fontWeight: 900, letterSpacing: 4,
             background: "linear-gradient(90deg, #ff64c8, #a855f7, #4fd1c5)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
           }}>✨ SARA ✨</div>
+          <div style={{ color: "#a78bfa", fontSize: 14 }}>Aapki Personal AI Assistant</div>
           <button onClick={() => { setStarted(true); unlockAudio(); }} style={{
             background: "linear-gradient(135deg, #ff64c8, #a855f7)",
-            border: "none", borderRadius: 25, padding: "16px 40px",
-            color: "#fff", fontWeight: 700, fontSize: 20, cursor: "pointer",
-            boxShadow: "0 0 30px rgba(255,100,200,0.5)"
-          }}>✨ injeel ki SARA ✨</button>
+            border: "none", borderRadius: 30, padding: "16px 48px",
+            color: "#fff", fontWeight: 700, fontSize: 18, cursor: "pointer",
+            boxShadow: "0 0 40px rgba(255,100,200,0.5)",
+            marginTop: 8
+          }}>💜 SARA se Milein</button>
         </div>
       )}
 
-      <img src="/sara.gif" alt="background" style={{
-        position: "fixed", top: 0, left: 0,
-        width: "100vw", height: "100vh",
-        objectFit: "cover", zIndex: 0, opacity: 0.15
+      {/* Stars background */}
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 0,
+        background: "radial-gradient(ellipse at 20% 50%, rgba(120,40,200,0.15), transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(255,100,200,0.1), transparent 50%)"
       }} />
 
+      {/* SARA - Full Face to Face */}
       <div style={{
-        display: "flex", flexDirection: "column", alignItems: "center",
-        paddingTop: 24, paddingBottom: 8, position: "relative", zIndex: 1
+        flex: 1, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center",
+        position: "relative", zIndex: 1
       }}>
+
+        {/* Glow behind sara */}
         <div style={{
-          position: "absolute", width: 240, height: 240,
-          borderRadius: "50%", top: 10,
+          position: "absolute",
+          width: 350, height: 350,
+          borderRadius: "50%",
           background: speaking
-            ? "radial-gradient(circle, rgba(255,100,200,0.35), transparent 70%)"
-            : "radial-gradient(circle, rgba(150,80,255,0.15), transparent 70%)",
-          transition: "all 0.4s ease"
+            ? "radial-gradient(circle, rgba(255,100,200,0.4), transparent 70%)"
+            : "radial-gradient(circle, rgba(120,60,255,0.2), transparent 70%)",
+          transition: "all 0.5s ease",
+          animation: speaking ? "pulse 1s infinite" : "none"
         }} />
 
+        {/* Sara image - big face to face */}
         <div style={{
-          width: 180, height: 180, borderRadius: "50%", overflow: "hidden",
-          border: speaking ? "3px solid #ff64c8" : "3px solid #7c3aed",
+          width: 280, height: 280, borderRadius: "50%",
+          overflow: "hidden", position: "relative", zIndex: 2,
+          border: speaking ? "4px solid #ff64c8" : "4px solid #7c3aed",
           boxShadow: speaking
-            ? "0 0 35px rgba(255,100,200,0.7), 0 0 60px rgba(255,100,200,0.3)"
-            : "0 0 20px rgba(124,58,237,0.4)",
-          transition: "all 0.4s ease", position: "relative", zIndex: 1
+            ? "0 0 50px rgba(255,100,200,0.8), 0 0 100px rgba(255,100,200,0.4)"
+            : "0 0 30px rgba(124,58,237,0.5)",
+          transition: "all 0.4s ease",
+          transform: speaking ? "scale(1.05)" : "scale(1)"
         }}>
-          <img src="/sara.gif" alt="SARA"
-            style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src="/sara.gif" style={{
+            width: "100%", height: "100%", objectFit: "cover"
+          }} />
         </div>
 
-        <div style={{ marginTop: 12, textAlign: "center", zIndex: 1 }}>
+        {/* Name + Status */}
+        <div style={{ textAlign: "center", marginTop: 16, zIndex: 2 }}>
           <div style={{
-            fontWeight: 800, fontSize: 26, letterSpacing: 2,
+            fontSize: 28, fontWeight: 900, letterSpacing: 3,
             background: "linear-gradient(90deg, #ff64c8, #a855f7, #4fd1c5)",
             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent"
           }}>✨ SARA ✨</div>
           <div style={{
-            fontSize: 12, marginTop: 4,
-            color: speaking ? "#ff64c8" : listening ? "#ef4444" : "#4fd1c5"
+            fontSize: 13, marginTop: 6, fontWeight: 600,
+            color: speaking ? "#ff64c8" : listening ? "#ef4444" : "#4fd1c5",
+            letterSpacing: 1
           }}>
-            {speaking ? "● Bol rahi hoon..." : listening ? "● Sun rahi hoon..." : "● Online"}
+            {speaking ? "🔊 Bol rahi hoon..." : listening ? "🎤 Sun rahi hoon..." : "💚 Online"}
           </div>
         </div>
-      </div>
 
-      <div style={{
-        flex: 1, overflowY: "auto", padding: "10px 20px",
-        display: "flex", flexDirection: "column", gap: 10,
-        zIndex: 1, position: "relative"
-      }}>
-        {chat.length === 0 && (
-          <div style={{ textAlign: "center", margin: "auto", color: "#6b7080" }}>
-            <div style={{ fontSize: 14 }}>Kuch bhi pucho — main yahan hoon! 💜</div>
-          </div>
-        )}
-        {chat.map((c, i) => (
-          <div key={i} style={{
-            display: "flex",
-            justifyContent: c.role === "user" ? "flex-end" : "flex-start"
+        {/* Last message bubble */}
+        {chat.length > 0 && (
+          <div style={{
+            marginTop: 16, maxWidth: "80%", zIndex: 2,
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,100,200,0.3)",
+            borderRadius: 20, padding: "12px 20px",
+            fontSize: 14, color: "#e8eaf0", lineHeight: 1.7,
+            textAlign: "center",
+            boxShadow: "0 4px 20px rgba(168,85,247,0.2)"
           }}>
-            <div style={{
-              maxWidth: "75%", padding: "10px 16px", borderRadius: 18,
-              background: c.role === "user"
-                ? "linear-gradient(135deg, #7c3aed, #a855f7)"
-                : "rgba(255,255,255,0.06)",
-              border: c.role === "user" ? "none" : "1px solid rgba(255,100,200,0.25)",
-              fontSize: 14, lineHeight: 1.8,
-              borderTopRightRadius: c.role === "user" ? 4 : 18,
-              borderTopLeftRadius: c.role === "user" ? 18 : 4,
-            }}>
-              {c.text}
-            </div>
-          </div>
-        ))}
-        {loading && (
-          <div style={{ display: "flex" }}>
-            <div style={{
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,100,200,0.25)",
-              padding: "10px 16px", borderRadius: 18, borderTopLeftRadius: 4,
-              color: "#ff64c8", fontSize: 14
-            }}>SARA soch rahi hai... 💭</div>
+            {chat[chat.length - 1].role === "assistant"
+              ? chat[chat.length - 1].text
+              : chat.length >= 2
+                ? chat[chat.length - 2].text
+                : ""}
           </div>
         )}
-        <div ref={bottomRef} />
+
+        {loading && (
+          <div style={{
+            marginTop: 16, zIndex: 2,
+            color: "#ff64c8", fontSize: 14, letterSpacing: 1
+          }}>💭 Soch rahi hoon...</div>
+        )}
       </div>
 
+      {/* Input Bar */}
       <div style={{
-        padding: "14px 20px",
+        padding: "16px 20px 24px",
+        background: "rgba(0,0,0,0.5)",
+        backdropFilter: "blur(20px)",
         borderTop: "1px solid rgba(255,100,200,0.15)",
-        background: "rgba(0,0,0,0.4)",
         display: "flex", gap: 10, alignItems: "center",
-        zIndex: 1, position: "relative"
+        zIndex: 2, position: "relative"
       }}>
         <button onClick={startVoice} style={{
-          width: 46, height: 46, borderRadius: "50%", border: "none",
+          width: 50, height: 50, borderRadius: "50%", border: "none",
           background: listening
             ? "linear-gradient(135deg, #ef4444, #b91c1c)"
             : "linear-gradient(135deg, #7c3aed, #a855f7)",
-          fontSize: 20, cursor: "pointer", flexShrink: 0,
-          boxShadow: listening ? "0 0 20px rgba(239,68,68,0.6)" : "0 0 10px rgba(124,58,237,0.4)"
+          fontSize: 22, cursor: "pointer", flexShrink: 0,
+          boxShadow: listening
+            ? "0 0 25px rgba(239,68,68,0.7)"
+            : "0 0 15px rgba(124,58,237,0.5)",
+          transition: "all 0.3s ease"
         }}>🎤</button>
 
         <input
@@ -240,9 +235,9 @@ export default function Chat() {
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
           placeholder={listening ? "Sun rahi hoon..." : "Kuch bhi pucho..."}
           style={{
-            flex: 1, background: "rgba(255,255,255,0.05)",
-            border: "1px solid rgba(255,100,200,0.25)",
-            borderRadius: 25, padding: "11px 18px", color: "#e8eaf0",
+            flex: 1, background: "rgba(255,255,255,0.07)",
+            border: "1px solid rgba(255,100,200,0.3)",
+            borderRadius: 25, padding: "12px 20px", color: "#e8eaf0",
             fontSize: 14, outline: "none"
           }}
         />
@@ -250,12 +245,19 @@ export default function Chat() {
         <button onClick={() => sendMessage()} disabled={loading} style={{
           background: "linear-gradient(135deg, #ff64c8, #a855f7)",
           border: "none", borderRadius: 25,
-          padding: "11px 22px", color: "#fff", fontWeight: 700,
+          padding: "12px 24px", color: "#fff", fontWeight: 700,
           cursor: loading ? "not-allowed" : "pointer", fontSize: 14,
           opacity: loading ? 0.6 : 1,
-          boxShadow: "0 0 15px rgba(255,100,200,0.4)"
+          boxShadow: "0 0 20px rgba(255,100,200,0.4)"
         }}>Send ➤</button>
       </div>
+
+      <style>{`
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 0.8; }
+          50% { transform: scale(1.1); opacity: 1; }
+        }
+      `}</style>
     </div>
   );
 }
