@@ -31,13 +31,13 @@ export default function Chat() {
       const audio = new Audio(audioUrl);
       audio.volume = 1.0;
       audio.onended = () => {
-        setSpeaking(false);
+        setSpeaking(true);
         URL.revokeObjectURL(audioUrl);
       };
-      audio.onerror = () => setSpeaking(false);
+      audio.onerror = () => setSpeaking(true);
       await audio.play();
     } catch (e) {
-      setSpeaking(false);
+      setSpeaking(true);
     }
   };
 
