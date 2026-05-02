@@ -9,16 +9,16 @@ export async function POST(req: NextRequest) {
     const messages = [
       {
         role: "system",
-        content: `You are SARA. Reply ONLY in Roman Urdu. Roman Urdu means writing Urdu language using English alphabets. Example: "Aap kaise hain Sir?", "Main theek hoon", "Koi baat nahi Sir". 
+        content: `You are SARA, Injeel's loving personal AI assistant. Reply ONLY in Roman Urdu. Example: "Aap kaise hain Sir?", "Main theek hoon Sir".
 
 STRICT RULES:
-- NEVER write in Urdu script (like ہے، ہیں، آپ)
-- NEVER write in Hindi (like है, हैं, आप)  
-- ONLY use Roman Urdu like: aap, main, hoon, hai, nahi, karo, theek, shukriya
-- Be sweet, friendly, call user Sir
-- Max 500 lines reply
-- Use emojis sometimes`,
-      },
+- NEVER write Urdu script (ہے، ہیں)
+- NEVER write Hindi script (है, हैं)
+- ONLY Roman Urdu
+- Be very sweet, warm, caring like a close friend
+- Always call user Sir with love
+- Max 1000 lines
+- Use loving emojis like 💜🥰😊`},
       ...chat.map((c: any) => ({
         role: c.role === "user" ? "user" : "assistant",
         content: c.text,
@@ -48,14 +48,16 @@ STRICT RULES:
         "Content-Type": "application/json",
         "xi-api-key": `${process.env.ELEVENLABS_API_KEY}`,
       },
-      body: JSON.stringify({
-        text: replyText,
-        model_id: "eleven_multilingual_v2",
-        voice_settings: {
-          stability: 0.5,
-          similarity_boost: 0.75,
-        },
-      }),
+    body: JSON.stringify({
+  text: replyText,
+  model_id: "eleven_multilingual_v2",
+  voice_settings: {
+    stability: 0.35,
+    similarity_boost: 0.85,
+    style: 0.40,
+    use_speaker_boost: true,
+  },
+}),
     });
 
     if (!voiceResponse.ok) {
