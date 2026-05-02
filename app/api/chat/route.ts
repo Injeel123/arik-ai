@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     const replyText = groqData.choices[0].message.content;
 
-    const voiceResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/nf4MCGNSdM0hxM95ZBQR`, {
+    const voiceResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/21m00Tcm4TlvDq8ikWAM`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
