@@ -28,10 +28,10 @@ export default function Chat() {
       const voices = window.speechSynthesis.getVoices();
       const urduVoice = voices.find(v => v.lang.includes("ur"));
       const femaleVoice = voices.find(v =>
-        v.name.includes("Female") ||
-        v.name.includes("Samantha") ||
-        v.name.includes("Google") ||
-      );
+  v.name.includes("Female") ||
+  v.name.includes("Samantha") ||
+  v.name.includes("Google")
+);
       if (urduVoice) utterance.voice = urduVoice;
       else if (femaleVoice) utterance.voice = femaleVoice;
     };
