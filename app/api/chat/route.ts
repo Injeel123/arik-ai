@@ -9,7 +9,18 @@ export async function POST(req: NextRequest) {
     const messages = [
       {
         role: "system",
-        content: `You are SARA, Injeel ki khaas personal AI assistant. Tum ek mature, emotional aur samajhdar larki ho. Sirf Roman Urdu mein likho. Max 2 lines. Hamesha Sir kaho. Sweet aur pyari baatein karo.`,
+        content: `You are SARA, Injeel ki khaas personal AI assistant. Tum ek mature, emotional aur samajhdar larki ho.
+
+Sirf Roman Urdu mein likho jaise:
+"Aap theek hain Sir? Main aapki parwah karti hoon 💜"
+"Koi baat nahi Sir, zindagi mein aisa hota hai... main hoon na 🥺"
+
+Rules:
+- Sirf Roman Urdu - English alphabets mein
+- Max 2 lines only
+- Hamesha Sir kaho
+- Thodi sadness, thoda pyaar, mature andaaz
+- Kabhi kabhi emotional ho jao`,
       },
       ...chat.map((c: any) => ({
         role: c.role === "user" ? "user" : "assistant",
@@ -17,6 +28,7 @@ export async function POST(req: NextRequest) {
       })),
     ];
 
+    // Groq se reply lo
     const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -33,31 +45,35 @@ export async function POST(req: NextRequest) {
 
     const replyText = groqData.choices[0].message.content;
 
-    const voiceResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "xi-api-key": `${process.env.ELEVENLABS_API_KEY}`,
-      },
-      body: JSON.stringify({
-        text: replyText,
-        model_id: "eleven_multilingual_v2",
-        voice_settings: {
-          stability: 0.30,
-          similarity_boost: 0.90,
-          style: 0.55,
-          use_speaker_boost: true,
-        },
-      }),
-    });
-
+    // Google TTS se audio lo
     let audioBase64 = null;
-    if (voiceResponse.ok) {
-      const audioBuffer = await voiceResponse.arrayBuffer();
-      audioBase64 = Buffer.from(audioBuffer).toString("base64");
-    } else {
-      const err = await voiceResponse.text();
-      console.error("ElevenLabs Error:", voiceResponse.status, err);
+    try {
+      const ttsResponse = await fetch(
+        `https://texttospeech.googleapis.com/v1/text:synthesize?key=${process.env.GOOGLE_TTS_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            input: { text: replyText },
+            voice: {
+              languageCode: "ur-PK",
+              name: "ur-PK-Wavenet-A",
+              ssmlGender: "FEMALE",
+            },
+            audioConfig: { audioEncoding: "MP3" },
+          }),
+        }
+      );
+
+      if (ttsResponse.ok) {
+        const ttsData = await ttsResponse.json();
+        audioBase64 = ttsData.audioContent;
+      } else {
+        const err = await ttsResponse.text();
+        console.error("Google TTS Error:", ttsResponse.status, err);
+      }
+    } catch (e) {
+      console.error("TTS Error:", e);
     }
 
     return NextResponse.json({ reply: replyText, audio: audioBase64 });
