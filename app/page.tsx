@@ -57,9 +57,10 @@ export default function Chat() {
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = "ur";
-    recognition.continuous = false;
-    recognition.interimResults = false;
+   recognition.lang = "ur-PK";
+recognition.interimResults = false;
+recognition.continuous = true; // recording band nahi hogi jaldi
+recognition.speechRecognitionList;
     recognition.maxAlternatives = 1;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
@@ -88,6 +89,16 @@ export default function Chat() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ chat: newChat }),
     });
+
+    const data = await res.json();
+    const reply = data.reply || "Koi jawab nahi mila";
+    
+    const cleanReply = reply.replace(/[\u{1F600}-\u{1F64F}|\u{1F300}-\u{1F5FF}|\u{1F680}-\u{1F6FF}|\u{2600}-\u{26FF}|\u{2700}-\u{27BF}]/gu, "");
+    
+    setChat([...newChat, { role: "assistant", text: reply }]);
+    speak(cleanReply);
+    setLoading(false);
+  };
 
     const data = await res.json();
     const reply = data.reply || "Koi jawab nahi mila";
