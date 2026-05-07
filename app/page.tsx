@@ -15,7 +15,6 @@ export default function Chat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
 
-  // Browser TTS - bilkul free!
   const speak = (text: string) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -28,10 +27,10 @@ export default function Chat() {
       const voices = window.speechSynthesis.getVoices();
       const urduVoice = voices.find(v => v.lang.includes("ur"));
       const femaleVoice = voices.find(v =>
-  v.name.includes("Female") ||
-  v.name.includes("Samantha") ||
-  v.name.includes("Google")
-);
+        v.name.includes("Female") ||
+        v.name.includes("Samantha") ||
+        v.name.includes("Google")
+      );
       if (urduVoice) utterance.voice = urduVoice;
       else if (femaleVoice) utterance.voice = femaleVoice;
     };
@@ -57,10 +56,9 @@ export default function Chat() {
       return;
     }
     const recognition = new SpeechRecognition();
-   recognition.lang = "ur-PK";
-recognition.interimResults = false;
-recognition.continuous = true; // recording band nahi hogi jaldi
-recognition.speechRecognitionList;
+    recognition.lang = "ur-PK";
+    recognition.interimResults = false;
+    recognition.continuous = true;
     recognition.maxAlternatives = 1;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
@@ -92,17 +90,10 @@ recognition.speechRecognitionList;
 
     const data = await res.json();
     const reply = data.reply || "Koi jawab nahi mila";
-    
     const cleanReply = reply.replace(/[\u{1F600}-\u{1F64F}|\u{1F300}-\u{1F5FF}|\u{1F680}-\u{1F6FF}|\u{2600}-\u{26FF}|\u{2700}-\u{27BF}]/gu, "");
-    
+
     setChat([...newChat, { role: "assistant", text: reply }]);
     speak(cleanReply);
-    setLoading(false);
-  };
-
-    // Browser TTS se bolao
-    speak(reply);
-
     setLoading(false);
   };
 
@@ -150,8 +141,6 @@ recognition.speechRecognitionList;
       <div style={{
         flex: 1, position: "relative", zIndex: 1, overflow: "hidden"
       }}>
-
-        {/* Sara GIF - Full Screen */}
         <img src="/sara.gif" style={{
           position: "absolute", inset: 0,
           width: "100%", height: "100%",
@@ -163,7 +152,6 @@ recognition.speechRecognitionList;
           transform: speaking ? "scale(1.03)" : "scale(1)"
         }} />
 
-        {/* Gradient overlay bottom */}
         <div style={{
           position: "absolute", bottom: 0, left: 0, right: 0,
           height: "45%",
@@ -171,7 +159,6 @@ recognition.speechRecognitionList;
           zIndex: 2
         }} />
 
-        {/* Gradient overlay top */}
         <div style={{
           position: "absolute", top: 0, left: 0, right: 0,
           height: "20%",
@@ -179,7 +166,6 @@ recognition.speechRecognitionList;
           zIndex: 2
         }} />
 
-        {/* Message bubble - top */}
         {(chat.length > 0 || loading) && (
           <div style={{
             position: "absolute", top: 20, left: 16, right: 16,
@@ -202,7 +188,6 @@ recognition.speechRecognitionList;
           </div>
         )}
 
-        {/* Name + Status */}
         <div style={{
           position: "absolute", bottom: 20, left: 0, right: 0,
           textAlign: "center", zIndex: 3
