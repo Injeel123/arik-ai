@@ -18,23 +18,20 @@ export default function Chat() {
   const speak = (text: string) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ur-PK";
-    utterance.rate = 0.85;
-    utterance.pitch = 1.3;
+    utterance.lang = "hi-IN";
+utterance.rate = 0.82;
+utterance.pitch = 1.1;
     utterance.volume = 1;
-
-    const setVoice = () => {
-      const voices = window.speechSynthesis.getVoices();
-      const urduVoice = voices.find(v => v.lang.includes("ur"));
-      const femaleVoice = voices.find(v =>
-        v.name.includes("Female") ||
-        v.name.includes("Samantha") ||
-        v.name.includes("Google")
-      );
-      if (urduVoice) utterance.voice = urduVoice;
-      else if (femaleVoice) utterance.voice = femaleVoice;
-    };
-
+const setVoice = () => {
+  const voices = window.speechSynthesis.getVoices();
+  const best = 
+    voices.find(v => v.name.includes("Google हिन्दी")) ||
+    voices.find(v => v.name.includes("Google Hindi")) ||
+    voices.find(v => v.lang === "hi-IN") ||
+    voices.find(v => v.name.includes("Female")) ||
+    voices[0];
+  if (best) utterance.voice = best;
+};
     if (window.speechSynthesis.getVoices().length > 0) {
       setVoice();
     } else {
