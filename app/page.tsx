@@ -100,10 +100,6 @@ recognition.speechRecognitionList;
     setLoading(false);
   };
 
-    const data = await res.json();
-    const reply = data.reply || "Koi jawab nahi mila";
-    setChat([...newChat, { role: "assistant", text: reply }]);
-
     // Browser TTS se bolao
     speak(reply);
 
