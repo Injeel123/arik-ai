@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const messages = [
       {
         role: "system",
-       content: `You are SARA, Injeel's personal AI assistant. 
+        content: `You are SARA, Injeel's personal AI assistant. 
 
 IMPORTANT RULES:
 - Always reply in simple easy Roman Urdu that sounds natural when spoken
@@ -26,7 +26,6 @@ IMPORTANT RULES:
       })),
     ];
 
-    // Groq se reply lo
     const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -43,32 +42,33 @@ IMPORTANT RULES:
 
     const replyText = groqData.choices[0].message.content;
 
-    // Google TTS se audio lo
+    // ElevenLabs se audio
     let audioBase64 = null;
     try {
-      const ttsResponse = await fetch(
-        `https://texttospeech.googleapis.com/v1/text:synthesize?key=${process.env.GOOGLE_TTS_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            input: { text: replyText },
-            voice: {
-              languageCode: "ur-PK",
-              name: "ur-PK-Wavenet-A",
-              ssmlGender: "FEMALE",
-            },
-            audioConfig: { audioEncoding: "MP3" },
-          }),
-        }
-      );
+      const voiceResponse = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/EXAVITQu4vr4xnSDxMaL`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "xi-api-key": `${process.env.ELEVENLABS_API_KEY}`,
+        },
+        body: JSON.stringify({
+          text: replyText,
+          model_id: "eleven_multilingual_v2",
+          voice_settings: {
+            stability: 0.25,
+            similarity_boost: 0.95,
+            style: 0.60,
+            use_speaker_boost: true,
+          },
+        }),
+      });
 
-      if (ttsResponse.ok) {
-        const ttsData = await ttsResponse.json();
-        audioBase64 = ttsData.audioContent;
+      if (voiceResponse.ok) {
+        const audioBuffer = await voiceResponse.arrayBuffer();
+        audioBase64 = Buffer.from(audioBuffer).toString("base64");
       } else {
-        const err = await ttsResponse.text();
-        console.error("Google TTS Error:", ttsResponse.status, err);
+        const err = await voiceResponse.text();
+        console.error("ElevenLabs Error:", voiceResponse.status, err);
       }
     } catch (e) {
       console.error("TTS Error:", e);

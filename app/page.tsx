@@ -17,31 +17,55 @@ export default function Chat() {
 
   const speak = (text: string) => {
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "hi-IN";
-utterance.rate = 0.82;
-utterance.pitch = 1.1;
+    const cleanText = text.replace(/[^\w\s,.!?'"-]/g, "");
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.lang = "ur-PK";
+    utterance.rate = 0.82;
+    utterance.pitch = 1.1;
     utterance.volume = 1;
-const setVoice = () => {
-  const voices = window.speechSynthesis.getVoices();
-  const best = 
-    voices.find(v => v.name.includes("Google हिन्दी")) ||
-    voices.find(v => v.name.includes("Google Hindi")) ||
-    voices.find(v => v.lang === "hi-IN") ||
-    voices.find(v => v.name.includes("Female")) ||
-    voices[0];
-  if (best) utterance.voice = best;
-};
+    const setVoice = () => {
+      const voices = window.speechSynthesis.getVoices();
+      const best =
+        voices.find(v => v.lang.includes("ur")) ||
+        voices.find(v => v.name.includes("Female")) ||
+        voices[0];
+      if (best) utterance.voice = best;
+    };
     if (window.speechSynthesis.getVoices().length > 0) {
       setVoice();
     } else {
       window.speechSynthesis.onvoiceschanged = setVoice;
     }
-
     utterance.onstart = () => setSpeaking(true);
     utterance.onend = () => setSpeaking(false);
     utterance.onerror = () => setSpeaking(false);
     window.speechSynthesis.speak(utterance);
+  };
+
+  const playAudio = async (base64Audio: string, fallbackText: string) => {
+    try {
+      setSpeaking(true);
+      const audioBlob = new Blob(
+        [Uint8Array.from(atob(base64Audio), c => c.charCodeAt(0))],
+        { type: "audio/mpeg" }
+      );
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.volume = 1.0;
+      audio.onended = () => {
+        setSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+      };
+      audio.onerror = () => {
+        setSpeaking(false);
+        URL.revokeObjectURL(audioUrl);
+        speak(fallbackText);
+      };
+      await audio.play();
+    } catch (e) {
+      setSpeaking(false);
+      speak(fallbackText);
+    }
   };
 
   const startVoice = () => {
@@ -55,7 +79,7 @@ const setVoice = () => {
     const recognition = new SpeechRecognition();
     recognition.lang = "ur-PK";
     recognition.interimResults = false;
-    recognition.continuous = true;
+    recognition.continuous = false;
     recognition.maxAlternatives = 1;
     recognition.onstart = () => setListening(true);
     recognition.onend = () => setListening(false);
@@ -68,7 +92,7 @@ const setVoice = () => {
     recognition.start();
     setTimeout(() => {
       try { recognition.stop(); } catch (e) {}
-    }, 100000);
+    }, 300000);
   };
 
   const sendMessage = async (overrideText?: string) => {
@@ -87,10 +111,16 @@ const setVoice = () => {
 
     const data = await res.json();
     const reply = data.reply || "Koi jawab nahi mila";
-    const cleanReply = reply.replace(/[\u{1F600}-\u{1F64F}|\u{1F300}-\u{1F5FF}|\u{1F680}-\u{1F6FF}|\u{2600}-\u{26FF}|\u{2700}-\u{27BF}]/gu, "");
+    const cleanReply = reply.replace(/[^\w\s,.!?'"-]/g, "");
 
     setChat([...newChat, { role: "assistant", text: reply }]);
-    speak(cleanReply);
+
+    if (data.audio) {
+      await playAudio(data.audio, cleanReply);
+    } else {
+      speak(cleanReply);
+    }
+
     setLoading(false);
   };
 
@@ -102,7 +132,6 @@ const setVoice = () => {
       fontFamily: "'Segoe UI', sans-serif", position: "relative"
     }}>
 
-      {/* Welcome Screen */}
       {!started && (
         <div style={{
           position: "fixed", inset: 0, zIndex: 999,
@@ -134,7 +163,6 @@ const setVoice = () => {
         </div>
       )}
 
-      {/* Sara Full Screen */}
       <div style={{
         flex: 1, position: "relative", zIndex: 1, overflow: "hidden"
       }}>
@@ -176,7 +204,7 @@ const setVoice = () => {
             boxShadow: "0 4px 30px rgba(168,85,247,0.3)"
           }}>
             {loading ? (
-              <span style={{ color: "#ff64c8" }}>💭 Soch rahi hoon...</span>
+              <span style={{ color: "#ff64c8" }}>Soch rahi hoon...</span>
             ) : (
               chat[chat.length - 1].role === "assistant"
                 ? chat[chat.length - 1].text
@@ -198,12 +226,11 @@ const setVoice = () => {
             fontSize: 13, marginTop: 6, fontWeight: 600, letterSpacing: 1,
             color: speaking ? "#ff64c8" : listening ? "#ef4444" : "#4fd1c5"
           }}>
-            {speaking ? "🔊 Bol rahi hoon..." : listening ? "🎤 Sun rahi hoon..." : "💚 Online"}
+            {speaking ? "Bol rahi hoon..." : listening ? "Sun rahi hoon..." : "Online"}
           </div>
         </div>
       </div>
 
-      {/* Input Bar */}
       <div style={{
         padding: "14px 16px 20px",
         background: "rgba(5,0,15,0.95)",
